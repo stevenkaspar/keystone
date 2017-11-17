@@ -53,7 +53,7 @@ module.exports = Field.create({
 	},
 	componentWillUpdate (nextProps) {
 		// Show the new filename when it's finished uploading
-		if (this.props.value.filename !== nextProps.value.filename) {
+		if (typeof this.props.value !=='undefined' && this.props.value.filename !== nextProps.value.filename) {
 			this.setState(buildInitialState(nextProps));
 		}
 	},
@@ -151,6 +151,26 @@ module.exports = Field.create({
 			return null;
 		}
 	},
+  isImg () {
+    return this.props.value && /image\//.test(this.props.value.mimetype);
+  },
+  isPdf () {
+    return this.props.value && /application\/pdf/.test(this.props.value.mimetype);
+  },
+	renderThumbnail () {
+    let thumbnail = '-- media type not recognized --';
+    if (this.isImg()) {
+      thumbnail = (<img style={{'max-width': '100%'}} src={this.props.value.url} />);
+    }
+    else if (this.isPdf()) {
+      thumbnail = (<embed src={this.props.value.url} style={{'max-width': '100%'}} height="375" type='application/pdf'></embed>);
+    }
+    return (
+      <div>
+        {thumbnail}
+      </div>
+    );
+	},
 	renderClearButton () {
 		if (this.state.removeExisting) {
 			return (
@@ -194,6 +214,7 @@ module.exports = Field.create({
 		const { label, note, path } = this.props;
 		const buttons = (
 			<div style={this.hasFile() ? { marginTop: '1em' } : null}>
+        {this.hasFile() && this.renderThumbnail()}
 				<Button onClick={this.triggerFileBrowser}>
 					{this.hasFile() ? 'Change' : 'Upload'} File
 				</Button>
